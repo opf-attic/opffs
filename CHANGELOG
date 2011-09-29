@@ -1,0 +1,8 @@
+opffs (0.0.1) unstable; urgency=low
+
+  [David Tarrant <davetaz@ecs.soton.ac.uk>]
+  * Initial Version of the Open Planets Foundation File Scanner (OPFFS)
+  * Uses the file tool and exiftool to scan files or directories of files and output results into CSV files.
+  * One CSV file is generated per type of file recognised by file
+
+ -- David Tarrant <davetaz@ecs.soton.ac.uk>  Thu, 29 Sep 2011 10:37:11 +0100

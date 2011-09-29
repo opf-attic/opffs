@@ -1,0 +1,84 @@
+#!/bin/bash
+
+VERBOSE=0
+
+if [ "$1" == "-v" ]
+then
+	VERBOSE=1
+	shift
+fi
+
+if [ "$1" == "" ]
+then
+	echo ""
+	echo "opffs"
+	echo "     Usage: ./opffs [options] path/to/files"
+	echo ""
+	echo "     Options:"
+	echo " 		-v 	Verbose Output"
+	echo ""
+	exit
+fi
+
+while [ $# -gt 0 ]
+do
+    	MYPATH=$1
+	shift
+done
+
+if [ ! -e $MYPATH ]; then
+	echo ""
+        echo "opffs"
+        echo "     Usage: ./opffs [options] path/to/files"
+        echo ""
+        echo "     Options:"
+        echo "          -v      Verbose Output"
+        echo ""
+	exit
+fi
+
+CURRENT=`pwd`
+OPFFS_PATH="/usr/share/opffs"
+if [ -e $CURRENT/process_results.php ]; then
+	OPFFS_PATH=$CURRENT
+fi	
+
+if [ $VERBOSE -gt 0 ]; then
+	echo "Making Directories"
+fi
+
+mkdir ~/.file_scanner/ 2>/dev/null
+rm -fR ~/.file_scanner/* 2>/dev/null
+cd ~/.file_scanner/
+PWD=`pwd`
+
+if [ $VERBOSE -gt 0 ]; then
+	echo "Scanning Files using file";
+fi
+
+find $MYPATH > ~/.file_scanner/file_list.sh
+sed 's/^/file "/g' ~/.file_scanner/file_list.sh > ~/.file_scanner/files.tmp
+sed 's/$/"/g' ~/.file_scanner/files.tmp > ~/.file_scanner/file_command.sh
+rm -f ~/.file_scanner/files.tmp
+chmod 755 ~/.file_scanner/file_command.sh
+~/.file_scanner/file_command.sh > ~/.file_scanner/file_command_results.txt
+rm -f ~/.file_scanner/file_command.sh
+
+if [ $VERBOSE -gt 0 ]; then
+	echo "Analylising Content MD5s"
+fi
+
+sed 's/^/md5 "/g' ~/.file_scanner/file_list.sh > ~/.file_scanner/files.tmp
+sed 's/$/" 2>\/dev\/null/g' ~/.file_scanner/files.tmp > ~/.file_scanner/md5_command.sh
+rm -f ~/.file_scanner/files.tmp
+chmod 755 ~/.file_scanner/md5_command.sh
+~/.file_scanner/md5_command.sh > ~/.file_scanner/md5_command_results.txt
+rm -f ~/.file_scanner/md5_command.sh
+
+rm -f ~/.file_scanner/file_list.sh
+
+if [ $VERBOSE -gt 0 ]; then
+	php $OPFFS_PATH/process_results.php -v $PWD/file_command_results.txt $CURRENT $2
+else
+	php $OPFFS_PATH/process_results.php -none $PWD/file_command_results.txt $CURRENT $2
+fi
